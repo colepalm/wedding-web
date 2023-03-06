@@ -1,34 +1,32 @@
-# fly.toml file generated for wedding-web on 2023-01-16T20:46:17-07:00
-
 app = "wedding-web"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
 
 [mounts]
   source="mysqldata"
-  destination="/data"
+  destination="/wedding"
 
 [env]
-  MYSQL_DATABASE = "some_db"
-  MYSQL_USER = "non_root_user"
+  MYSQL_DATABASE = "wedding-db"
+  MYSQL_USER = "us"
 
-[env]
-  WORDPRESS_CONFIG_EXTRA = "define(\"MYSQL_CLIENT_FLAGS\", MYSQLI_CLIENT_SSL);"
+[build]
+  image = "mysql:8"
+
+[experimental]
+  cmd = [
+    "--default-authentication-plugin", 
+    "mysql_native_password", 
+    "--datadir", 
+    "/wedding/mysql"
+  ]
 
 [[services]]
-  internal_port = 80
+  internal_port = 3306
   protocol = "tcp"
-  [services.concurrency]
-    hard_limit = 50
-    soft_limit = 25
 
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = 443
+[[services.ports]]
+  handlers = ["http"]
+  port = 3306
 
-  [[services.ports]]
-    handlers = ["http"]
-    port = 80
-
-  [[services.tcp_checks]]
-    grace_period = "1s"
-    interval = 5000
-    timeout = 2000
